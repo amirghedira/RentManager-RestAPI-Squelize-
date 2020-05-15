@@ -1,107 +1,126 @@
-const db = require('../config/database')
 const Car = require('../models/Car')
+const User = require('../models/User')
+const Rent = require('../models/Rent')
 const fs = require('fs')
-exports.getCars = (req, res) => {
+exports.getCars = async (req, res) => {
 
-    Car.findAll({})
-        .then(data => {
-            res.status(200).json({ cars: data });
+    try {
 
-        })
-        .catch(err => {
-            res.status(400).json({ message: err.message })
-            console.log(err)
-        })
+        const cars = await Car.findAll()
+        res.status(200).json({ cars: cars });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
-exports.getCar = (req, res) => {
-    let sql = `SELECT * FROM voiture where matricule ='${req.params.mat}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        res.status(200).json({ car: result });
-    });
+exports.getCar = async (req, res) => {
+
+    try {
+        const car = await Car.findOne({ where: { matricule: req.params.mat } })
+        res.status(200).json({ car: car });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
-exports.addCar = (req, res) => {
-    Car.find({ where: { matricule: req.body.matricule } })
-        .then(car => {
+exports.addCar = async (req, res) => {
 
-        })
-        .catch(err => { console.log(err) })
-    db.query(sql, req.body.matricule, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        if (result.length == 0) {
-            let post = {
+    try {
+        const car = await Car.findOne({ where: { matricule: req.body.matricule } })
+        if (!car) {
+            let data = {
                 matricule: req.body.matricule,
                 marque: req.body.marque,
                 couleur: req.body.couleur,
                 prix: req.body.prix,
                 kilometrage: req.body.kilometrage,
-                etat: 'L',//libre
                 image: req.file.filename,
                 ncinprop: req.user.ncin
             };
-            let sql = "INSERT INTO voiture SET ?";
-            db.query(sql, post, (err, result) => {
-                if (err) res.status(500).json({ message: err });
-                res.status(200).json({ message: 'car successfully added' })
-            });
-        } else {
+            await Car.create(data)
+            res.status(200).json({ message: 'car successfully added' })
+
+        } else
             res.status(409).json({ message: 'car already exists' });
-        }
-    });
+
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+
 }
 
-exports.getFreeCars = (req, res) => {
-    let sql = "SELECT * FROM voiture where `etat`='L'";
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        res.status(200).json({ freecars: result });
-    });
+exports.getFreeCars = async (req, res) => {
+    try {
+        const freeCars = await Car.findAll({ where: { etat: true } })
+        res.status(200).json({ freeCars: freeCars });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
-exports.getRentedCars = (req, res) => {
-    let sql = "SELECT * FROM voiture WHERE `etat`='O'";
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        res.status(200).json({ rentedcars: result })
-    });
+exports.getRentedCars = async (req, res) => {
+    try {
+        const rentedCars = await Car.findAll({ where: { etat: false } })
+        res.status(200).json({ rentedCars: rentedCars });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
-exports.deleteCar = (req, res) => {
-    let sql = `SELECT * FROM voiture WHERE matricule ='${req.params.mat}'`;
-    db.query(sql, (err, cars) => {
-        if (err)
-            throw new Error(err)
-        let sql2 = `DELETE FROM voiture WHERE matricule='${req.params.mat}'`;
-        db.query(sql2, (err, result) => {
-            if (err) throw new Error(err)
+exports.deleteCar = async (req, res) => {
 
-            fs.unlink(`./uploads/${cars[0].image}`, (err) => {
+    try {
+        const car = await Car.findOne({ where: { matricule: req.params.mat } })
+        if (car) {
+            fs.unlink(`./uploads/${car.dataValues.image}`, (err) => {
                 if (err) console.log(err)
             });
-
+            await Car.destroy({ where: { matricule: req.params.mat } })
             res.status(200).json({ message: 'car successfully deleted' })
-        });
-    })
+
+        }
+        else
+            res.status(404).json({ message: 'car not found' });
+
+    } catch (error) {
+
+        res.status(500).json({ message: error.message });
+
+    }
 }
 
 
-exports.freeCar = (req, res) => {
-    let sql = `UPDATE voiture SET etat='L' WHERE matricule = '${req.params.mat}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
+exports.freeCar = async (req, res) => {
+    try {
+        await Car.update({ etat: true }, { where: { matricule: req.params.mat } })
         res.status(200).json({ message: 'car successully updated' })
-    });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+
+    }
 }
 
-exports.getCarHistory = (req, res) => {
-    let sql = `SELECT U.ncin,U.nom,U.prenom,U.num_tel,U.image,U.imagencin,L.date,L.prix,L.duree
-    FROM user U , location L
-    WHERE L.ncin = U.ncin
-    AND L.matricule='${req.params.mat}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        res.status(200).json({ history: result })
-    });
+exports.getCarHistory = async (req, res) => {
+
+    try {
+        const history = await Rent.findAll({
+            include: [{
+                model: User,
+                required: true,
+                where: { ncin: req.user.ncin }
+            }]
+        })
+        res.status(200).json({ carHistory: history })
+
+    } catch (error) {
+
+        res.status(500).json({ message: error.message });
+
+    }
 }

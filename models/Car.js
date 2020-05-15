@@ -17,11 +17,15 @@ const carSchema = db.define('Car', {
         type: Sequelize.FLOAT
     },
     etat: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
     },
     image: {
         type: Sequelize.STRING
     },
+    kilometrage: {
+        type: Sequelize.INTEGER
+    }
 
 
 }, { timestamps: false })

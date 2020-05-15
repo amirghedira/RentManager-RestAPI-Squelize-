@@ -1,69 +1,72 @@
 
-const db = require('../config/database')
+const Rent = require('../models/Rent')
+const Car = require('../models/Car')
 
 
-exports.addRent = (req, res) => {
-    date = new Date();
-    let sqlfetch = "SELECT * FROM voiture WHERE `matricule`= ? and `etat`= 'L' ";
-    db.query(sqlfetch, req.body.matricule, (err, cars) => {
-        if (err) throw err;
-        if (cars.length > 0) {
-            let post = {
+exports.addRent = async (req, res) => {
+
+    try {
+        const car = await Car.findOne({ where: { matricule: req.body.matricule, etat: true } })
+        if (car) {
+            const data = {
                 ncin: req.user.ncin,
-                ncinprop: cars[0].ncinprop,
+                ncinprop: car.dataValues.ncinprop,
                 matricule: req.body.matricule,
                 duree: req.body.duree,
-                prix: 80,
-                date: date,
+                prix: car.dataValues.prix * req.body.duree,
+                date: new Date().toISOString(),
             };
-            let sql = "INSERT INTO location SET ?";
-            db.query(sql, post, (err, result) => {
-                if (err) throw err;
-                let sqlupdate = "UPDATE `voiture` SET `etat`='O' WHERE `matricule` = ?";
-                db.query(sqlupdate, req.body.matricule, (err, result) => {
-                    if (err) throw err;
-                    res.status(200).json({ message: 'rent successfully added' });
+            await Rent.create(data);
+            await Car.update({ etat: false }, { where: { matricule: req.body.matricule } })
+            res.status(200).json({ message: 'rent successfully added' });
 
-                });
-            });
-
-        } else {
-            res.status(409).json({ message: 'Car is not free' });
         }
-    });
+        else
+            res.status(409).json({ message: 'Car is not free or not found' });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+
+    }
 }
 
-exports.getRents = (req, res) => {
-    let sql = "SELECT * FROM location";
-    db.query(sql, (err, result) => {
-        if (err)
-            res.status(500).json({ message: err })
-        res.status(200).json({ rents: result })
-    })
+exports.getRents = async (req, res) => {
+
+    try {
+        const rents = await Rent.findAll()
+        res.status(200).json({ rents: rents });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
-exports.getSpecificRent = (req, res) => {
-    let sql = `SELECT * FROM location WHERE ncin=${req.params.ncin} and matricule=${req.params.mat} `
-    db.query(sql, (err, result) => {
-        if (err)
-            res.status(500).json({ message: err })
-        res.status(200).json({ rents: result })
-    })
+exports.getSpecificRent = async (req, res) => {
+    try {
+        const rent = await Rent.findOne({ where: { ncin: req.params.ncin, matricule: req.params.mat } })
+        res.status(200).json({ rent: rent });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
-exports.getUserRents = (req, res) => {
-    let sql = `SELECT * FROM location WHERE ncin=${req.params.ncin}`
-    db.query(sql, (err, result) => {
-        if (err)
-            res.status(500).json({ message: err })
-        res.status(200).json({ rents: result })
-    })
+exports.getUserRents = async (req, res) => {
+    try {
+        const userRents = await Rent.findAll({ where: { ncin: req.params.ncin } })
+        res.status(200).json({ userRents: userRents });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
-exports.getCarRents = (req, res) => {
-    let sql = `SELECT * FROM location WHERE matricule=${req.params.mat} `
-    db.query(sql, (err, result) => {
-        if (err)
-            res.status(500).json({ message: err })
-        res.status(200).json({ rents: result })
-    })
+exports.getCarRents = async (req, res) => {
+
+    try {
+        const carRents = await Rent.findAll({ where: { matricule: req.params.mat } })
+        res.status(200).json({ carRents: carRents });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }

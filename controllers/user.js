@@ -1,69 +1,91 @@
 const bcrypt = require('bcrypt');
 const db = require('../config/database')
+const User = require('../models/User')
+const Rent = require('../models/Rent')
+const Car = require('../models/Car')
 const fs = require("fs");
 const jwt = require('jsonwebtoken')
 
 
 
-exports.getUsers = (req, res) => {
+exports.getUsers = async (req, res) => {
+    try {
+        const users = await User.findAll()
+
+        res.status(200).json({ users: users })
+
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+exports.getUser = async (req, res) => {
+
+
+    try {
+        const user = await User.findOne({ where: { id: req.params.id } })
+        if (user)
+
+            res.status(200).json({ user: user.dataValues })
+
+        else
+            res.status(404).json({ message: 'user not found' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+
 
 }
-exports.getUser = (req, res) => {
-    let sql = `SELECT * FROM user WHERE id='${req.params.id}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        if (result.length > 0) {
-            res.status(200).json({ user: result })
-        } else {
-            res.status(404).json({ message: 'user not found' });
 
-        }
-    });
+exports.getUserByUsername = async (req, res) => {
+
+    try {
+        const user = await User.findOne({ where: { username: req.params.username } })
+        if (user)
+
+            res.status(200).json({ user: user.dataValues })
+
+        else
+            res.status(404).json({ message: 'user not found' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 }
 
-exports.getUserByUsername = (req, res) => {
-    let sql = `SELECT * FROM user WHERE username='${req.params.username}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        if (result.length > 0) {
-            res.status(200).json({ user: result })
-        } else {
-            res.status(404).json({ message: 'user not found' });
+exports.getUserByNcin = async (req, res) => {
+    try {
+        const user = await User.findOne({ where: { ncin: req.params.ncin } })
+        if (user)
 
-        }
+            res.status(200).json({ user: user.dataValues })
 
-    });
+        else
+            res.status(404).json({ message: 'user not found' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 }
 
-exports.getUserByNcin = (req, res) => {
-    let sql = `SELECT * FROM user WHERE ncin='${req.params.ncin}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
+exports.getUserByEmail = async (req, res) => {
+    try {
+        const user = await User.findOne({ where: { email: req.params.email } })
+        if (user)
 
-        if (result.length > 0) {
-            res.status(200).json({ user: result })
-        } else {
-            res.status(404).json({ message: 'user not found' });
+            res.status(200).json({ user: user.dataValues })
 
-        }
-    });
+        else
+            res.status(404).json({ message: 'user not found' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 }
-
-exports.getUserByEmail = (req, res) => {
-    let sql = `SELECT * FROM user WHERE email='${req.params.email}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        if (result.length > 0) {
-            res.status(200).json({ user: result })
-        } else {
-            res.status(404).json({ message: 'user not found' });
-        }
-    });
-}
-exports.addUser = (req, res) => {
-    bcrypt.hash(req.body.password, 11)
-        .then(hashedpass => {
-            let post = {
+exports.addUser = async (req, res) => {
+    console.log('jjj')
+    console.log(req.files[0].filename)
+    try {
+        const user = await User.findOne({ where: { username: req.body.username } })
+        if (!user) {
+            const hashedpass = await bcrypt.hash(req.body.password, 11)
+            let data = {
                 username: req.body.username,
                 password: hashedpass,
                 email: req.body.email,
@@ -72,7 +94,7 @@ exports.addUser = (req, res) => {
                 nom: req.body.nom,
                 prenom: req.body.prenom,
                 age: req.body.age,
-                daten: req.body.daten,
+                daten: new Date(req.body.daten),
                 npermis: req.body.npermis,
                 adresse: req.body.adresse,
                 num_tel: req.body.num_tel,
@@ -80,101 +102,147 @@ exports.addUser = (req, res) => {
                 bgimage: req.files[2].filename, // background image 
                 imagencin: req.files[1].filename,
                 joindate: new Date().toISOString()
-            };
-            let sql = `INSERT into user SET ?`;
-            db.query(sql, post, (err, result) => {
-                if (err) res.status(500).json({ message: err });
-                res.status(200).json({ message: 'user added successfully' });
-            });
-        })
-        .catch(err => {
-            res.status(500).json({ message: err });
+            }
+            const createdUser = await User.create(data)
 
-        })
+            res.status(200).json({ User: createdUser })
+
+        } else {
+            res.status(409).json({ message: 'user already found' })
+
+        }
+
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+
+    }
+
+
 
 }
 
-exports.userLogin = (req, res) => {
-    let sql = `SELECT * FROM user WHERE username= '${req.body.username}'`;
-    db.query(sql, (err, users) => {
-        if (err) res.status(500).json({ message: err });
-        if (users.length == 1) {
-            bcrypt.compare(req.body.password, users[0].password)
-                .then(result => {
-                    if (result) {
-                        const token = jwt.sign({ id: users[0].id, username: req.body.username, ncin: users[0].ncin }, process.env.JWT_SECRET_KEY)
-                        res.status(200).json({ message: 'successfully logged in', token: token });
-                    } else {
-                        res.status(400).json({ message: 'login failed' })
+exports.userLogin = async (req, res) => {
+    try {
+        const user = await User.findOne({ where: { username: req.body.username } })
+        if (user) {
+            const result = await bcrypt.compare(req.body.password, user.dataValues.password)
 
-                    }
-                })
-                .catch(err => {
-                    res.status(500).json({ message: err })
-                })
+            if (result) {
+                const token = jwt.sign({ id: user.dataValues.id, username: req.body.username, ncin: user.dataValues.ncin }, process.env.JWT_SECRET_KEY)
+                res.status(200).json({ message: 'successfully logged in', token: token });
+            } else {
+                res.status(400).json({ message: 'login failed' })
+
+            }
         } else {
             res.status(400).json({ message: 'login failed' })
         }
-    });
+    } catch (error) {
+
+        res.status(500).json({ message: error.message });
+
+    }
+
+
 }
-exports.updateUser = (req, res) => {
-    let sql = `UPDATE user SET username='${req.body.username}',password='${req.body.password}',email='${req.body.email}' WHERE username='${req.body.currentname}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
+exports.updateUser = async (req, res) => {
+
+    try {
+        await User.update({ username: req.body.username, email: req.body.email }, { where: { username: req.user.username } })
         res.status(200).json({ message: 'user updated successfully' });
-    });
-}
-exports.updateProfileImg = (req, res) => {
-    let sql = `UPDATE user SET image='${req.body.image}' WHERE username='${req.params.username}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        res.status(200).json({ message: 'user updated successfully' });
-    });
-}
-exports.getUserHistory = (req, res) => {
-    let sql = `SELECT L.date,L.duree,L.prix,V.matricule,V.marque,V.image
-    FROM voiture V , location L
-    WHERE L.matricule = V.matricule
-    AND L.ncin='${req.params.ncin}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
-        res.status(200).json({ history: result });
-    });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+
+    }
 }
 
-exports.updateBackgroundImg = (req, res) => {
-    let sql = `UPDATE user SET bgimage='${req.body.image}' WHERE username='${req.params.username}'`;
-    db.query(sql, (err, result) => {
-        if (err) res.status(500).json({ message: err });
+exports.updateUserPassword = async (req, res) => {
+
+    try {
+        const hashedpw = await bcrypt.hash(req.body.password, 11);
+        await User.update({ password: hashedpw }, { where: { username: req.user.username } })
         res.status(200).json({ message: 'user updated successfully' });
-    });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+
+    }
 }
-exports.deleteUser = (req, res) => {
-    let sql1 = `SELECT * FROM user WHERE username='${req.params.username}'`;
-    db.query(sql1, (err, users) => {
-        if (err)
-            res.status(500).json({ message: err });
-        if (users.length > 0) {
 
-            let sql = `DELETE FROM user WHERE username='${req.params.username}'`;
-            db.query(sql, req.body.matricule, (err, result) => {
-                if (err) res.status(500).json({ message: err });
-                fs.unlink(`./uploads/${users[0].image}`, (err) => {
-                    if (err) console.log(err)
-                });
-                fs.unlink(`./uploads/${users[0].imagencin}`, (err) => {
-                    if (err) console.log(err)
-                });
-                fs.unlink(`./uploads/${users[0].bgimage}`, (err) => {
-                    if (err) console.log(err)
-                });
-                res.status(200).json({ message: 'user deleted successfully' });
+exports.updateProfileImg = async (req, res) => {
 
+    try {
+        const user = await User.findOne({ where: { username: req.user.username } })
+        fs.unlink(`./uploads/${user.dataValues.image}`, (err) => {
+            if (err) console.log(err)
+        });
+        await User.update({ image: req.file.filename }, { where: { username: req.user.username } })
+        res.status(200).json({ message: 'user updated successfully' });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+
+    }
+}
+exports.getUserHistory = async (req, res) => {
+
+    try {
+        const history = await Car.findAll({
+            include: [{
+                model: Rent,
+                required: true,
+                where: { ncin: req.params.ncin }
+            }]
+        })
+        res.status(200).json({ history: history });
+    } catch (error) {
+
+        res.status(500).json({ message: error.message });
+
+    }
+}
+
+exports.updateBackgroundImg = async (req, res) => {
+
+    try {
+        const user = await User.findOne({ where: { username: req.user.usernam } })
+
+        fs.unlink(`./uploads/${user.dataValues.bgimage}`, (err) => {
+            if (err) console.log(err)
+        });
+
+        await User.update({ bgimage: req.file.filename }, { where: { username: req.user.username } })
+        res.status(200).json({ message: 'user updated successfully' });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+
+    }
+}
+exports.deleteUser = async (req, res) => {
+    try {
+        const user = await User.findOne({ where: { username: req.params.username } })
+        if (user) {
+            fs.unlink(`./uploads/${user.dataValues.image}`, (err) => {
+                if (err) console.log(err)
             });
+            fs.unlink(`./uploads/${user.dataValues.imagencin}`, (err) => {
+                if (err) console.log(err)
+            });
+            fs.unlink(`./uploads/${user.dataValues.bgimage}`, (err) => {
+                if (err) console.log(err)
+            });
+            await User.destroy({ where: { username: req.params.username } })
+
+            res.status(200).json({ message: 'user deleted successfully' });
+
         } else {
             res.status(404).json({ message: 'user not found' })
         }
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 
-
-    })
 }

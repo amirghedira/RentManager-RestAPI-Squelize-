@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize');
+
 const db = require('../config/database')
 const userSchema = db.define('User', {
     username: {
@@ -26,12 +27,15 @@ const userSchema = db.define('User', {
         type: Sequelize.INTEGER
     },
     daten: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
     },
     adresse: {
         type: Sequelize.STRING
     },
     num_tel: {
+        type: Sequelize.STRING
+    },
+    npermis: {
         type: Sequelize.STRING
     },
     image: {
@@ -44,7 +48,7 @@ const userSchema = db.define('User', {
         type: Sequelize.STRING
     },
     joindate: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
     },
 }, { timestamps: false })
 

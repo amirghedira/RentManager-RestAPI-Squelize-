@@ -23,7 +23,11 @@ exports.getCar = (req, res) => {
 }
 
 exports.addCar = (req, res) => {
-    let sql = "SELECT * FROM voiture where matricule=?";
+    Car.find({ where: { matricule: req.body.matricule } })
+        .then(car => {
+
+        })
+        .catch(err => { console.log(err) })
     db.query(sql, req.body.matricule, (err, result) => {
         if (err) res.status(500).json({ message: err });
         if (result.length == 0) {

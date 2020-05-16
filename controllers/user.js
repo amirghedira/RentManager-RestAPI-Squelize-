@@ -189,11 +189,11 @@ exports.updateProfileImg = async (req, res) => {
 exports.getUserHistory = async (req, res) => {
 
     try {
-        const history = await Car.findAll({
+        const history = await User.findAll({
             include: [{
                 model: Rent,
                 required: true,
-                where: { ncin: req.params.ncin }
+                where: { ncin: req.params.ncin, active: false }
             }]
         })
         res.status(200).json({ history: history });

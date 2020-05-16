@@ -97,7 +97,9 @@ exports.deleteCar = async (req, res) => {
 
 exports.freeCar = async (req, res) => {
     try {
-        await Car.update({ etat: true }, { where: { matricule: req.params.mat } })
+        const rent = await Rent.findOne({ where: { id: req.params.id } })
+        await Car.update({ etat: true }, { where: { matricule: rent.dataValues.matricule } })
+        await Rent.update({ active: false }, { where: { id: req.params.rentid } })
         res.status(200).json({ message: 'car successully updated' })
 
     } catch (error) {
@@ -109,11 +111,11 @@ exports.freeCar = async (req, res) => {
 exports.getCarHistory = async (req, res) => {
 
     try {
-        const history = await Rent.findAll({
+        const history = await Car.findAll({
             include: [{
-                model: User,
+                model: Rent,
                 required: true,
-                where: { ncin: req.user.ncin }
+                where: { ncin: req.user.ncin, active: false }
             }]
         })
         res.status(200).json({ carHistory: history })

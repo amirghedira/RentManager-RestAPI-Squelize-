@@ -18,7 +18,7 @@ router.post('/', checkAuth, upload.single("carimage"), carController.addCar);
 
 router.delete('/:mat', checkAuth, carController.deleteCar);
 
-router.patch('/freecar/:mat', checkAuth, carController.freeCar);
+router.patch('/freecar/:rentid', checkAuth, carController.freeCar);
 
 //historique d une voiture
 router.get('/history/:mat', checkAuth, carController.getCarHistory);

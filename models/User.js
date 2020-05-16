@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-
+const Rent = require('../models/Rent')
 const db = require('../config/database')
 const userSchema = db.define('User', {
     username: {
@@ -51,6 +51,4 @@ const userSchema = db.define('User', {
         type: Sequelize.DATEONLY
     },
 }, { timestamps: false })
-
-
 module.exports = userSchema;

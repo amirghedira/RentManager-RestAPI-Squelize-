@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database')
+const Rent = require('../models/Rent')
 const carSchema = db.define('Car', {
     matricule: {
         type: Sequelize.STRING
@@ -29,5 +30,8 @@ const carSchema = db.define('Car', {
 
 
 }, { timestamps: false })
+
+carSchema.hasMany(Rent, { foreignKey: 'matricule', sourceKey: 'matricule' })
+Rent.hasMany(carSchema, { foreignKey: 'matricule', sourceKey: 'matricule' })
 
 module.exports = carSchema;

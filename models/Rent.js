@@ -5,25 +5,31 @@ const db = require('../config/database')
 const rentSchema = db.define('Rent', {
     ncin: {
         type: Sequelize.STRING,
-
+        allowNull: false
     },
     ncinprop: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
     },
     matricule: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
     },
     prix: {
-        type: Sequelize.FLOAT
+        type: Sequelize.FLOAT,
+        allowNull: false
     },
     duree: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
     },
     date: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        allowNull: false
     },
     active: {
         type: Sequelize.BOOLEAN,
+        allowNull: false,
         defaultValue: true
     }
 }, { timestamps: false })

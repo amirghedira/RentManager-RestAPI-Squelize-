@@ -1,1 +1,1 @@
-this folder is responsible for user and car images
+this folder is responsible for storing user and car images

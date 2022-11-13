@@ -3,6 +3,26 @@ This is another versions of the previous rent manager API made with MySQL with n
 Note that all the functionalities are the same with the previous API and the goal here is to use `sequelize` to handle database queries.
 You can find more information about the previous version of this API [here](https://www.amirghedira.com/project/RentManager-RestAPI(MySQL)/NodeJS%20-%20Express%20-%20MySQL/5ea8a607a8f9a400174139d5)
 
+
+# Launch the project
+To launch the project, you have to first add a `.env` folder in the root directory that will hold the environment variables of the backend. You can find a `.env.example` folder as reference for the environment variables used.
+
+After adding a `.env` file, you have to install the NodeJS packages on the backend (the project holds both the frontend under the client folder and the backend in the root directory of the project)
+
+To install the backend Node packages, simply run:
+``` bash
+npm install
+```
+To run the backend server, run:
+``` bash
+npm start
+```
+To run the backend server in development mode, run:
+``` bash
+npm run dev
+```
+Note that the server will listen on port `5000`
+
 # Platform & Libraries 
 
 ``` json
@@ -48,7 +68,7 @@ This package is very useful to manipulate files such as saving them deleting the
 Link: [https://www.npmjs.com/package/multer](https://www.npmjs.com/package/multer)
 
 ## Sequelize/mysql2:
-These are the basic packages to build a rest API with MySQL database. Actually, sequelize makes interactions with database a bit easier for someone who don't know MySQL language. It provides a built in functions that you use them to fetch , store and update data without writing MySQL queries. Also to make all this work `sequelize` and `mysql2` packages are needed to convert behind the scenes the functions provided by Sequelize into MySQL queries before hitting the database.
+These are the basic packages to build a rest API with MySQL database. Actually, Sequelize makes interactions with database a bit easier for someone who don't know MySQL language. It provides a built-in functions that you use them to fetch , store and update data without writing MySQL queries. Also, to make all this work `sequelize` and `mysql2` packages are needed to convert behind the scenes the functions provided by Sequelize into MySQL queries before hitting the database.
 
 Link: [https://www.npmjs.com/package/mysql2](https://www.npmjs.com/package/mysql2)
 

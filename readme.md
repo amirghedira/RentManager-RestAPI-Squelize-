@@ -9,6 +9,7 @@ To launch the project, you have to first add a `.env` file in the root directory
 
 ## Using Docker
 Note: Docker must be installed on your machine.
+
 To launch the project, simply run:
 ```bash
 docker-compose -f docker-compose-local.yml up --build --force-recreate

@@ -7,6 +7,13 @@ You can find more information about the previous version of this API [here](http
 # Launch the project
 To launch the project, you have to first add a `.env` file in the root directory that will hold the environment variables of the backend. You can find a `.env.example` folder as reference for the environment variables used.
 
+## Using Docker
+Note: Docker must be installed on your machine.
+To launch the project, simply run:
+```bash
+docker-compose -f docker-compose-local.yml up --build --force-recreate
+```
+## Manually
 After adding a `.env` file, you have to install the NodeJS packages on the backend
 
 To install the backend Node packages, simply run:
@@ -63,12 +70,12 @@ This package is responsible for manipulating tokens and check for user authentic
 Link: [https://www.npmjs.com/package/jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken)
 
 ## multer:
-This package is very useful to manipulate files such as saving them deleting them, you can also edit their names before saving them. it's really simple to use and to configure.
+This package is very useful to manipulate files such as saving them deleting them, you can also edit their names before saving them. It's really simple to use and to configure.
 
 Link: [https://www.npmjs.com/package/multer](https://www.npmjs.com/package/multer)
 
 ## Sequelize/mysql2:
-These are the basic packages to build a rest API with MySQL database. Actually, Sequelize makes interactions with database a bit easier for someone who don't know MySQL language. It provides a built-in functions that you use them to fetch , store and update data without writing MySQL queries. Also, to make all this work `sequelize` and `mysql2` packages are needed to convert behind the scenes the functions provided by Sequelize into MySQL queries before hitting the database.
+These are the basic packages to build a rest API with MySQL database. Actually, Sequelize makes interactions with database a bit easier for someone who don't know MySQL language. It provides a built-in functions that you use them to fetch, store and update data without writing MySQL queries. Also, to make all this work, `sequelize` and `mysql2` packages are needed to convert behind the scenes the functions provided by Sequelize into MySQL queries before hitting the database.
 
 Link: [https://www.npmjs.com/package/mysql2](https://www.npmjs.com/package/mysql2)
 
